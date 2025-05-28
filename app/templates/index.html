@@ -81,8 +81,28 @@
             });
         }
 
+        function validateFutureDate(inputId) {
+            const input = document.getElementById(inputId);
+            input.addEventListener('blur', function () {
+                const val = this.value;
+                const parts = val.split("/");
+                if (parts.length === 3) {
+                    const enteredDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0); // zera horas
+
+                    if (enteredDate > today) {
+                        alert("A data não pode ser maior que a data atual.");
+                        this.value = "";
+                    }
+                }
+            });
+        }
+
         formatDateInput('start_date');
         formatDateInput('end_date');
+        validateFutureDate('start_date');
+        validateFutureDate('end_date');
     </script>
 </body>
 </html>

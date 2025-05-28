@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request
 from datetime import datetime
 from .logger import get_logger
+import os
 
 main = Blueprint('main', __name__)
 logger = get_logger()
@@ -21,24 +22,38 @@ def index():
 
     return render_template("index.html", message=message)
 
+
 @main.route("/logs", methods=["GET"])
 def view_logs():
-    date_filter = request.args.get("date")
+    start_date_str = request.args.get("start_date")
+    end_date_str = request.args.get("end_date")
     logs = []
-    if date_filter:
+
+    if start_date_str and end_date_str:
         try:
-            selected_date = datetime.strptime(date_filter, "%d/%m/%Y").date()
-            selected_date_str = selected_date.strftime("%Y-%m-%d")
-            with open("logs/app.log", "r") as f:
-                for line in f:
-                    if line.startswith(selected_date_str):
-                        logs.append(line.strip())
-            if not logs:
-                logs = ["Nenhum log encontrado para a data informada."]
+            start_date = datetime.strptime(start_date_str, "%d/%m/%Y").date()
+            end_date = datetime.strptime(end_date_str, "%d/%m/%Y").date()
+            current_date = datetime.now().date()
+
+            if start_date > end_date:
+                logs = ["A data inicial não pode ser posterior à data final."]
+            elif end_date > current_date:
+                logs = ["A data final não pode ser superior à data atual."]
+            else:
+                with open("logs/app.log", "r") as f:
+                    for line in f:
+                        try:
+                            log_date = datetime.strptime(line.split(" - ")[0], "%Y-%m-%d %H:%M:%S,%f").date()
+                            if start_date <= log_date <= end_date:
+                                logs.append(line.strip())
+                        except (ValueError, IndexError):
+                            continue
+
+                if not logs:
+                    logs = ["Nenhum log encontrado para o período informado."]
         except ValueError:
             logs = ["Formato de data inválido. Use DD/MM/AAAA."]
     else:
-        with open("logs/app.log", "r") as f:
-            logs = [line.strip() for line in f.readlines()[-100:]]
+        logs = ["Informe ambas as datas."]
 
-    return render_template("index.html", logs=logs, date_filter=date_filter)
+    return render_template("index.html", logs=logs, start_date=start_date_str, end_date=end_date_str)
