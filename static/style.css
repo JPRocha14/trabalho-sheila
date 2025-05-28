@@ -124,10 +124,8 @@ form button {
 
 h2 {
     margin-top: 40px;
-    margin-bottom: 15px; /* aumenta o espaçamento abaixo do título */
+    margin-bottom: 15px;
 }
-
-/* Responsividade */
 @media (max-width: 600px) {
     .container {
         padding: 20px;
@@ -138,4 +136,10 @@ h2 {
     select {
         width: 100%;
     }
+}
+
+.button-center {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
 }
